@@ -42,7 +42,7 @@ const availabilityController = {
       if (availabilities.length === 0) {
         return res
           .status(404)
-          .send({ message: "No availabilities found for the provided time." });
+          .send({ message: "No availabilities found for the provided date." });
       }
       return res.status(200).send(availabilities);
     } catch (error) {
