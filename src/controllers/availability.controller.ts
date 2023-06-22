@@ -7,17 +7,15 @@ import userService from "../services/user.service";
 const availabilityController = {
   getAvailability: async (req: Request, res: Response) => {
     try {
-      if (!req.user) {
-        if (req.params.userId) {
-          const user: IUser = await userService.findUser(
-            req.params.userId.toString()
-          );
-          req.user = user;
-        } else {
-          return res
-            .status(400)
-            .send({ message: "Email or Username is required" });
-        }
+      if (!req.params.userId && !req.user)
+        return res
+          .status(400)
+          .send({ message: "Email or username is required" });
+      if (req.params.userId) {
+        const user: IUser = await userService.findUser(
+          req.params.userId.toString()
+        );
+        req.user = user;
       }
       const { meetingDate } = req.query as { meetingDate: string };
       if (!meetingDate) {
@@ -47,7 +45,10 @@ const availabilityController = {
       return res.status(200).send(availabilities);
     } catch (error) {
       console.error(error);
-      return res.status(500).send({ message: "Failed to get availability." });
+      if (error instanceof Error)
+        return res.status(500).send({ message: error.message });
+      else
+        return res.status(500).send({ message: "Failed to get availability." });
     }
   },
 };
