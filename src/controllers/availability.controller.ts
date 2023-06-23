@@ -3,6 +3,7 @@ import { calculateAvailabilities } from "../utils/common.utils";
 import { getBusySlots } from "../utils/google-calendar.utils";
 import { IUser } from "../models/user.model";
 import userService from "../services/user.service";
+import { GoogleOAuth2Client } from "../utils/auth.utils";
 
 const availabilityController = {
   getAvailability: async (req: Request, res: Response, next: NextFunction) => {
@@ -29,10 +30,11 @@ const availabilityController = {
           .send({ message: "Meeting date should be in future." });
       }
       const user: IUser = req.user as IUser;
-      const busySlots = await getBusySlots(meetingDate, user.workingHours, {
+      GoogleOAuth2Client.setCredentials({
         access_token: user.accessToken,
         refresh_token: user.refreshToken,
-      });
+      })
+      const busySlots = await getBusySlots(meetingDate, user.workingHours, GoogleOAuth2Client);
 
       const availabilities = await calculateAvailabilities(
         user.workingHours,

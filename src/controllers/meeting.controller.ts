@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { IUser } from "../models/user.model";
+import { GoogleOAuth2Client } from "../utils/auth.utils";
 import { calculateAvailabilities } from "../utils/common.utils";
 import {
   getBusySlots,
@@ -13,10 +14,11 @@ const meetingController = {
       const { start, end, guestEmail, guestName } = req.body;
       const user: IUser = req.user as IUser;
       const meetingDate = new Date(start).toISOString().split("T")[0];
-      const busySlots = await getBusySlots(meetingDate, user.workingHours, {
+      GoogleOAuth2Client.setCredentials({
         access_token: user.accessToken,
         refresh_token: user.refreshToken,
       });
+      const busySlots = await getBusySlots(meetingDate, user.workingHours, GoogleOAuth2Client);
       const availabilities = await calculateAvailabilities(
         user.workingHours,
         busySlots,
@@ -41,10 +43,7 @@ const meetingController = {
               },
             },
           };
-          const eventData = await insertCalendarEvent(event, {
-            access_token: user.accessToken,
-            refresh_token: user.refreshToken,
-          });
+          const eventData = await insertCalendarEvent(event, GoogleOAuth2Client);
           const response = {
             id: eventData.id,
             start: eventData.start?.dateTime,
@@ -66,10 +65,11 @@ const meetingController = {
   getMeetings: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user: IUser = req.user as IUser;
-      const meetings = await getCalendarEvents({
+      GoogleOAuth2Client.setCredentials({
         access_token: user.accessToken,
         refresh_token: user.refreshToken,
       });
+      const meetings = await getCalendarEvents(GoogleOAuth2Client);
       if (!meetings || meetings.length === 0) {
         return res.status(404).send({ message: "No meetings found." });
       }

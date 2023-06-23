@@ -1,11 +1,8 @@
-import { Credentials } from "google-auth-library";
 import { google } from "googleapis";
 import moment from "moment-timezone";
-import { GoogleOAuth2Client } from "./auth.utils";
 
-const calendar = google.calendar({ version: "v3", auth: GoogleOAuth2Client });
-export const getCalendarEvents = async (credentials: Credentials) => {
-  GoogleOAuth2Client.setCredentials(credentials);
+export const getCalendarEvents = async (auth: any) => {
+  const calendar = google.calendar({ version: "v3", auth });
   // Upcoming events
   const response = await calendar.events.list({
     calendarId: "primary",
@@ -24,9 +21,9 @@ export const getCalendarEvents = async (credentials: Credentials) => {
 };
 export const insertCalendarEvent = async (
   event: any,
-  credentials: Credentials
+  auth: any
 ) => {
-  GoogleOAuth2Client.setCredentials(credentials);
+  const calendar = google.calendar({ version: "v3", auth });
   const response = await calendar.events.insert({
     calendarId: "primary",
     requestBody: event,
@@ -38,9 +35,8 @@ export const insertCalendarEvent = async (
 export const getBusySlots = async (
   meetingDate: string,
   workingHours: { start: number; end: number },
-  credentials: Credentials
+  auth: any
 ) => {
-  GoogleOAuth2Client.setCredentials(credentials);
   const timeMin = moment
     .tz(
       `${meetingDate} ${workingHours.start < 10 ? "0" : ""}${
@@ -52,6 +48,7 @@ export const getBusySlots = async (
   const timeMax = moment
     .tz(`${meetingDate} ${workingHours.end}:00`, "Asia/Kolkata")
     .format();
+  const calendar = google.calendar({ version: "v3", auth });
   const { data } = await calendar.freebusy.query({
     requestBody: {
       timeMin,
