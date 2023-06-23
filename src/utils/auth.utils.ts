@@ -39,13 +39,10 @@ passport.use(
         googleId: profile.id,
         accessToken,
         refreshToken,
-        workingHours: {
-          start: 9,
-          end: 20,
-        },
+        workingHours: { start: 9, end: 17 },
         duration: 30,
       };
-      await GoogleOAuth2Client.setCredentials({access_token: accessToken});
+      await GoogleOAuth2Client.setCredentials({ access_token: accessToken });
       try {
         const user = await userService.findOrCreateUser(data);
         return done(null, user);

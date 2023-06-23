@@ -1,11 +1,11 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { calculateAvailabilities } from "../utils/common.utils";
 import { getBusySlots } from "../utils/google-calendar.utils";
 import { IUser } from "../models/user.model";
 import userService from "../services/user.service";
 
 const availabilityController = {
-  getAvailability: async (req: Request, res: Response) => {
+  getAvailability: async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.params.userId && !req.user)
         return res
@@ -29,7 +29,10 @@ const availabilityController = {
           .send({ message: "Meeting date should be in future." });
       }
       const user: IUser = req.user as IUser;
-      const busySlots = await getBusySlots(meetingDate, user.workingHours);
+      const busySlots = await getBusySlots(meetingDate, user.workingHours, {
+        access_token: user.accessToken,
+        refresh_token: user.refreshToken,
+      });
 
       const availabilities = await calculateAvailabilities(
         user.workingHours,
@@ -44,11 +47,7 @@ const availabilityController = {
       }
       return res.status(200).send(availabilities);
     } catch (error) {
-      console.error(error);
-      if (error instanceof Error)
-        return res.status(500).send({ message: error.message });
-      else
-        return res.status(500).send({ message: "Failed to get availability." });
+      next(error);
     }
   },
 };

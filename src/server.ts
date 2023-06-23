@@ -27,11 +27,7 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-app.get("/", (req, res) => {
-  res.send("Welcome to the meeting app!");
-});
-
+app.get("/", (req, res) => res.send("Welcome to the meeting app!"));
 app.use("/availability", availabilityRoutes);
 app.use("/meeting", meetingRoutes);
 app.use("/auth", authRoutes);

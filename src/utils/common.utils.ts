@@ -41,18 +41,15 @@ const calculateAvailabilities = (
   let slotEnd = moment(slotStart).add(meetingDuration, "minutes");
 
   let availableSlots = [];
-
   while (slotEnd <= endTime) {
     let slot = {
       start: moment.tz(slotStart, "Asia/Kolkata").format(),
       end: moment.tz(slotEnd, "Asia/Kolkata").format(),
     };
     if (!isSlotBusy(slot, busySlots)) availableSlots.push(slot);
-
     slotStart = moment(slotStart).add(meetingDuration, "minutes");
     slotEnd = moment(slotStart).add(meetingDuration, "minutes");
   }
-
   return availableSlots;
 };
 
